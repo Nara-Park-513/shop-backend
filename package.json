@@ -1,0 +1,7 @@
+{
+  "name": "shop-backend",
+  "scripts": {
+    "start": "gradlew.bat bootRun",
+    "dev": "gradlew.bat bootRun"
+  }
+}
