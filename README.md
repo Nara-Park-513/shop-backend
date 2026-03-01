@@ -1,119 +1,161 @@
-# 🏭 ERP · MES · SHOP 연계 쇼핑몰 BACKEND 프로젝트
+# DAON – Integrated Commerce & ERP Backend
 
-본 프로젝트는 **ERP·MES 업무 흐름을 고려한 B2B 산업자재 쇼핑몰 백엔드 시스템**입니다.  
-단순 쇼핑몰 API 구현이 아닌,
+Spring Boot 기반 통합 상거래 백엔드 시스템입니다.  
+쇼핑몰 주문 처리, 카카오페이 가결제, 향후 ERP/MES 확장을 고려한 구조로 설계되었습니다.
 
-**기준정보 → 주문 → 재고 → 출고 → 매출**로 이어지는  
-기업용 업무 흐름을 **백엔드 관점에서 안정적으로 처리하기 위한 구조 설계·구현**을 목표로 합니다.
-
-> ⚠️ 현재 ERP 기준정보 연계 및 MES 확장 구조 **고도화 진행중**인 개인 포트폴리오 프로젝트입니다.
+단순 CRUD 프로젝트가 아닌,  
+외부 결제 API 연동과 결제 상태 관리까지 포함한 실전형 백엔드 구조를 목표로 개발했습니다.
 
 ---
 
-## 📌 프로젝트 개요
+## 🚀 Tech Stack
 
-본 백엔드는 단독 서비스가 아닌,  
-**ERP · SHOP · MES가 유기적으로 연결되는 구조**를 전제로 설계되었습니다.
-
-### 🔗 역할 분리
-- **ERP**
-  - 상품 / 가격 / 카테고리 기준정보 관리
-  - 주문 및 출하·매출 처리의 기준 시스템
-- **SHOP**
-  - 사용자 주문 요청 처리
-  - 상품 조회 및 주문 상태 API 제공
-- **MES**
-  - 재고 차감
-  - 출고 및 생산 연계를 고려한 확장 구조
-
-> 현재는 SHOP 중심 백엔드 구현 단계이며,  
-> MES 재고·출고 연계는 단계적으로 확장할 예정입니다.
-
----
-
-## 🔐 인증 · 권한 처리
-
-관리자 / 사용자 역할을 분리하여  
-**JWT 기반 인증 및 권한 제어 구조**로 API 접근을 제어합니다.
-
-### 권한 구분
-- **관리자**
-  - 상품 마스터 관리
-  - 판매 상태 제어
-- **사용자**
-  - 상품 조회
-  - 주문 처리
-
-> 프론트엔드 로그인 화면과 연동되는 인증 API 구조입니다.
-
----
-
-## 🛒 사용자 상품 조회 · 주문 API 흐름
-
-ERP 기준정보를 기반으로  
-쇼핑몰 메인 화면에 노출되는 **상품 조회 API**를 제공합니다.
-
-### 처리 흐름
-1. 상품 목록 조회 요청
-2. ERP 기준 상품명 / 가격 정보 조회
-3. 사용자 화면에 노출 가능한 형태로 응답
-4. 주문 요청 시 주문 데이터 생성 및 상태 관리
-
----
-
-## 🧑‍💼 관리자 상품 관리 API (ERP 성격)
-
-관리자 화면에서 사용하는  
-**상품 마스터 관리용 API**를 제공합니다.
-
-### 제공 기능
-- 상품 등록 / 수정 / 삭제
-- 판매중 / 품절 상태 관리
-- ERP 기준 정보 관리 역할 수행
-
----
-
-## 🔁 업무 흐름 요약 (Backend 관점)
-
-1. 사용자 상품 조회 요청
-2. ERP 기준 상품 정보 응답
-3. 사용자 주문 요청 처리
-4. 주문 데이터 생성 및 상태 관리
-5. (확장 예정) MES 재고 차감 및 출고 처리 연계
-
----
-
-## 🛠 기술 스택
-
-### Backend
-- Java 17
-- Spring Boot
+- **Spring Boot**
+- Spring Data JPA
 - Spring Security
-- JWT 기반 인증
-- JPA (Hibernate)
-- REST API
-
-### Database
-- RDB 기반 설계
-- MariaDB / Oracle 고려
-
-### Tooling
+- WebClient (외부 API 연동)
+- MariaDB
 - Gradle
-- GitHub
+- 카카오페이 Open API
 
 ---
 
-## 📂 패키지 구조 (도메인 중심 설계)
+## 🏗 시스템 구성
+
+### 📦 주요 도메인
+
+- **Payment**
+- (확장 예정) Order
+- (확장 예정) Inventory / ERP
+- (확장 예정) MES 출고 처리
+
+---
+
+## 💳 카카오페이 가결제 구현
+
+### 1️⃣ Ready (결제 요청 생성)
+
+- 클라이언트로부터 결제 금액 수신
+- 카카오페이 ready API 호출
+- `tid` 발급
+- Payment 상태 `READY`
+- redirectUrl 반환
+
+---
+
+### 2️⃣ Approve (결제 승인)
+
+- success 페이지에서 `pg_token` 수신
+- 카카오페이 approve API 호출
+- Payment 상태 `APPROVED` 업데이트
+- (확장 가능) 주문 상태 `PAID` 처리
+
+---
+
+## 🔄 결제 흐름 요약
 
 ```text
-com.lgc.shop
- ├─ auth            # 인증 / 인가 (JWT, Security)
- ├─ member          # 사용자 / 관리자 계정
- ├─ product         # 상품 마스터 (ERP 기준정보)
- ├─ order           # 주문 처리
- ├─ inventory       # 재고 관리 (MES 연계 확장 고려)
- ├─ common
- │   ├─ dto         # 공통 DTO
- │   ├─ exception   # 예외 처리
- │   └─ response    # 공통 응답 포맷
- └─ config          # 보안, JPA, 기타 설정
+Frontend
+  ↓
+POST /api/payments/kakaopay/ready
+  ↓
+KakaoPay 결제창 이동
+  ↓
+Success URL → pg_token 전달
+  ↓
+POST /api/payments/kakaopay/approve
+  ↓
+Payment 상태 APPROVED
+🗄 Payment Entity 구조
+필드	설명
+id	PK
+orderId	내부 주문 ID
+tid	카카오 결제 고유 ID
+amount	결제 금액
+status	READY / APPROVED
+createdAt	생성 시간
+PaymentStatus Enum
+public enum PaymentStatus {
+    READY,
+    APPROVED
+}
+📡 API 명세
+✅ 결제 준비
+POST /api/payments/kakaopay/ready
+
+Request:
+
+{
+  "amount": 10000
+}
+
+Response:
+
+{
+  "orderId": "uuid",
+  "redirectUrl": "https://..."
+}
+✅ 결제 승인
+POST /api/payments/kakaopay/approve
+
+Request:
+
+{
+  "orderId": "uuid",
+  "pg_token": "..."
+}
+⚙️ 실행 방법
+./gradlew bootRun
+
+기본 실행 주소:
+
+http://localhost:9999
+🛠 환경 설정
+
+application.properties
+
+kakaopay.base-url=https://open-api.kakaopay.com
+kakaopay.secret-key=${KAKAOPAY_SECRET_KEY}
+kakaopay.cid=TC0ONETIME
+kakaopay.partner-user-id=demo_user
+
+kakaopay.redirect.success=http://localhost:3000/payment/kakao/success
+kakaopay.redirect.cancel=http://localhost:3000/payment/kakao/cancel
+kakaopay.redirect.fail=http://localhost:3000/payment/kakao/fail
+
+환경 변수 설정 필요:
+
+KAKAOPAY_SECRET_KEY=발급받은_시크릿키
+🧠 개발 중 해결한 문제
+
+KAKAOPAY_SECRET_KEY Placeholder 오류 해결
+
+카카오페이 400 BAD_REQUEST (도메인 미등록 문제 해결)
+
+WebClient 의존성 및 실행 오류 해결
+
+module not specified 실행 문제 해결
+
+amount 누락으로 인한 예외 처리 개선
+
+📈 확장 계획
+
+Order 도메인과 Payment 연동
+
+ERP 재고 차감 자동화
+
+MES 출고 처리 API 구현
+
+결제 취소/환불 API 추가
+
+결제 로그 및 리포트 기능
+
+🎯 프로젝트 목표
+
+외부 결제 API 연동 경험 확보
+
+상태 기반 결제 처리 설계
+
+ERP/MES 확장을 고려한 구조 설계
+
+실무에 가까운 결제 흐름 구현
