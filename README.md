@@ -1,161 +1,160 @@
-# DAON – Integrated Commerce & ERP Backend
+# DAON – Integrated Commerce Platform (Backend)
 
-Spring Boot 기반 통합 상거래 백엔드 시스템입니다.  
-쇼핑몰 주문 처리, 카카오페이 가결제, 향후 ERP/MES 확장을 고려한 구조로 설계되었습니다.
+Spring Boot 기반으로 개발한 **통합 쇼핑몰 백엔드 프로젝트**입니다.  
+Next.js 프론트엔드와 연동하여 상품 조회, 주문 처리, 카카오페이 결제 요청 및 승인 흐름을 처리합니다.
 
-단순 CRUD 프로젝트가 아닌,  
-외부 결제 API 연동과 결제 상태 관리까지 포함한 실전형 백엔드 구조를 목표로 개발했습니다.
+단순 API 서버 구현을 넘어,  
+**ERP 및 MES 확장을 고려한 통합 상거래 플랫폼**을 목표로 개발했습니다.
+
+---
+
+## 📌 Project Overview
+
+DAON은 사용자 관점의 쇼핑몰 기능과  
+관리/운영 관점의 ERP·MES 확장 가능성을 함께 고려한 프로젝트입니다.
+
+백엔드는 Spring Boot 기반으로 구현되었으며,  
+프론트엔드와 REST API 방식으로 통신하며 주문 및 결제 프로세스를 처리합니다.
+
+### 핵심 목표
+- 쇼핑몰 주문 및 결제 API 구현
+- 카카오페이 결제 연동 처리
+- 프론트엔드와의 안정적인 API 통신 구조 설계
+- ERP / MES와 연결 가능한 통합 백엔드 구조 마련
 
 ---
 
 ## 🚀 Tech Stack
 
+### Backend
 - **Spring Boot**
+- **Java**
+- Spring Web
 - Spring Data JPA
-- Spring Security
-- WebClient (외부 API 연동)
-- MariaDB
-- Gradle
-- 카카오페이 Open API
+- Lombok
+
+### Database
+- MySQL / MariaDB
+
+### Features / APIs
+- REST API 기반 주문 처리
+- 카카오페이 결제 연동
+- JPA 기반 데이터 처리
+
+### Dev Tools
+- Git
+- GitHub
+- IntelliJ IDEA / VS Code
+- Postman
 
 ---
 
-## 🏗 시스템 구성
+## ✨ Main Features
 
-### 📦 주요 도메인
+### 🛍 상품 및 주문
+- 상품 조회 API 제공
+- 주문 정보 저장 및 처리
+- 프론트엔드 주문 페이지와 연동
+- 주문 요청 데이터 검증
 
-- **Payment**
-- (확장 예정) Order
-- (확장 예정) Inventory / ERP
-- (확장 예정) MES 출고 처리
+### 💳 카카오페이 가결제 연동
+- Ready → Redirect → Approve 흐름 처리
+- 결제 요청 정보 구성
+- 결제 승인 완료 후 결과 반환
+- 결제 실패 / 취소 상황 대응 구조 설계
 
----
-
-## 💳 카카오페이 가결제 구현
-
-### 1️⃣ Ready (결제 요청 생성)
-
-- 클라이언트로부터 결제 금액 수신
-- 카카오페이 ready API 호출
-- `tid` 발급
-- Payment 상태 `READY`
-- redirectUrl 반환
-
----
-
-### 2️⃣ Approve (결제 승인)
-
-- success 페이지에서 `pg_token` 수신
-- 카카오페이 approve API 호출
-- Payment 상태 `APPROVED` 업데이트
-- (확장 가능) 주문 상태 `PAID` 처리
+### 🔗 프론트엔드 연동
+- `/api/payments/kakaopay/ready` 요청 처리
+- 카카오 결제창 redirect URL 반환
+- success 요청에서 `pg_token` 전달받아 승인 처리
+- 프론트엔드 요청 흐름에 맞춘 응답 구조 구성
 
 ---
 
-## 🔄 결제 흐름 요약
+## 🔄 Payment Flow
 
-```text
-Frontend
-  ↓
-POST /api/payments/kakaopay/ready
-  ↓
-KakaoPay 결제창 이동
-  ↓
-Success URL → pg_token 전달
-  ↓
-POST /api/payments/kakaopay/approve
-  ↓
-Payment 상태 APPROVED
-🗄 Payment Entity 구조
-필드	설명
-id	PK
-orderId	내부 주문 ID
-tid	카카오 결제 고유 ID
-amount	결제 금액
-status	READY / APPROVED
-createdAt	생성 시간
-PaymentStatus Enum
-public enum PaymentStatus {
-    READY,
-    APPROVED
-}
-📡 API 명세
-✅ 결제 준비
-POST /api/payments/kakaopay/ready
+1. 사용자가 프론트엔드에서 주문하기 버튼을 클릭
+2. 프론트엔드가 백엔드 결제 준비 API를 호출
+3. 백엔드가 카카오페이 Ready API를 호출
+4. 카카오 결제창 URL을 프론트엔드에 반환
+5. 사용자가 카카오 결제창에서 결제를 진행
+6. 결제 완료 후 success 페이지로 이동
+7. `pg_token`을 백엔드 Approve API로 전달
+8. 최종 결제 승인 및 완료 처리
 
-Request:
+---
 
-{
-  "amount": 10000
-}
+## 🛠 Getting Started
 
-Response:
+### 1. Clone repository
+```bash
+git clone https://github.com/Nara-Park-513/mes-backend.git
+cd mes-backend
+```
 
-{
-  "orderId": "uuid",
-  "redirectUrl": "https://..."
-}
-✅ 결제 승인
-POST /api/payments/kakaopay/approve
+### 2. Configure environment
+`application.yml` 또는 `application.properties`에 데이터베이스 및 환경 설정을 추가합니다.
 
-Request:
+예시:
 
-{
-  "orderId": "uuid",
-  "pg_token": "..."
-}
-⚙️ 실행 방법
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/mesdb
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+카카오페이 연동을 위한 API 키 및 관련 설정도 함께 추가해야 합니다.
+
+### 3. Build project
+```bash
+./gradlew clean build
+```
+
+### 4. Run server
+```bash
 ./gradlew bootRun
+```
 
-기본 실행 주소:
+### 5. Open in browser
+```bash
+http://localhost:8080
+```
 
-http://localhost:9999
-🛠 환경 설정
+> 프론트엔드 서버(`http://localhost:3000`)와 함께 실행해야 주문 및 결제 기능이 정상적으로 동작합니다.
 
-application.properties
+---
 
-kakaopay.base-url=https://open-api.kakaopay.com
-kakaopay.secret-key=${KAKAOPAY_SECRET_KEY}
-kakaopay.cid=TC0ONETIME
-kakaopay.partner-user-id=demo_user
+## ⚠️ Troubleshooting
 
-kakaopay.redirect.success=http://localhost:3000/payment/kakao/success
-kakaopay.redirect.cancel=http://localhost:3000/payment/kakao/cancel
-kakaopay.redirect.fail=http://localhost:3000/payment/kakao/fail
+개발 과정에서 아래와 같은 이슈를 해결했습니다.
 
-환경 변수 설정 필요:
+- 프론트엔드 ↔ 백엔드 API 연동 문제 해결
+- 카카오페이 결제 요청 데이터 누락 문제 점검
+- 환경변수 및 설정 파일 구성 오류 해결
+- CORS 및 요청/응답 구조 문제 정리
+- 데이터베이스 연결 설정 문제 해결
 
-KAKAOPAY_SECRET_KEY=발급받은_시크릿키
-🧠 개발 중 해결한 문제
+---
 
-KAKAOPAY_SECRET_KEY Placeholder 오류 해결
+## 🎯 Project Purpose
 
-카카오페이 400 BAD_REQUEST (도메인 미등록 문제 해결)
+- 쇼핑몰 + ERP / MES 확장이 가능한 통합 구조 설계
+- 외부 결제 API 연동 경험 축적
+- 실제 상용 서비스 흐름과 유사한 결제 프로세스 구현
+- 프론트엔드와 백엔드 간 API 협업 구조 이해
 
-WebClient 의존성 및 실행 오류 해결
+---
 
-module not specified 실행 문제 해결
+## 🔮 Future Improvements
 
-amount 누락으로 인한 예외 처리 개선
+- 주문 내역 조회 API 추가
+- 결제 상태 및 결제 이력 관리 기능 확장
+- 사용자 인증 및 권한 관리 기능 추가
+- 출고 / 재고 / 품질 관리 기능 연동
+- ERP / MES 도메인 확장
 
-📈 확장 계획
+---
 
-Order 도메인과 Payment 연동
+## 👩‍💻 Author
 
-ERP 재고 차감 자동화
-
-MES 출고 처리 API 구현
-
-결제 취소/환불 API 추가
-
-결제 로그 및 리포트 기능
-
-🎯 프로젝트 목표
-
-외부 결제 API 연동 경험 확보
-
-상태 기반 결제 처리 설계
-
-ERP/MES 확장을 고려한 구조 설계
-
-실무에 가까운 결제 흐름 구현
+DAON Integrated Commerce Platform Backend Project
