@@ -45,7 +45,6 @@ DAON은 사용자 관점의 쇼핑몰 기능과
 - Git
 - GitHub
 - IntelliJ IDEA / VS Code
-- Postman
 
 ---
 
