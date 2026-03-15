@@ -34,7 +34,7 @@ DAON은 사용자 관점의 쇼핑몰 기능과
 - Lombok
 
 ### Database
-- MySQL / MariaDB
+- MariaDB
 
 ### Features / APIs
 - REST API 기반 주문 처리
